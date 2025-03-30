@@ -2,9 +2,9 @@ import os
 import time
 import json
 import tkinter as tk
-import psutil
 from tkinter import messagebox
 from tkinter import simpledialog
+import psutil
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
