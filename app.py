@@ -10,10 +10,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from cryptography.fernet import Fernet
 
-# Profile file for storing and retrieving profiles (encrypted)
-PROFILE_FILE = "profiles.json"
-KEY_FILE = "key.key"
-MULTIBLOXY = os.path.join("MultiBloxy", "MultiBloxy.exe")
+PROFILE_FILE = "profiles.json"  # Profile file for storing and retrieving profiles (encrypted)
+KEY_FILE = "key.key"  # Encryption key for encrypting and decrypting profile data
+MULTIBLOXY = os.path.join("MultiBloxy", "MultiBloxy.exe")  # MultiBloxy executable file for multi-instance support
 
 def generate_key():
     """
@@ -25,9 +24,10 @@ def generate_key():
 
 def load_key():
     """
-    Load the encryption key from the KEY_FILE.
+    Load the encryption key from the KEY_FILE. Checks if the encryption key file exists. If it does, the key is loaded from the KEY_FILE and returned. If the file does not exist, a new encryption key is generated, saved to the file, and then returned.
 
-    :return: The generated key.
+    :return: The encryption key loaded from the KEY_FILE.
+    :rtype: bytes
     """
     if os.path.exists(KEY_FILE):
         with open(KEY_FILE, 'rb') as key_file:
@@ -44,7 +44,10 @@ def encrypt_data(data):
     Encrypt the profile data.
 
     :param data: The data to be encrypted (string format).
+    :type data: str
     :return: The encrypted data.
+    :rtype: bytes
+    :raises TypeError: If the input data is not a string.
     """
     return cipher.encrypt(data.encode())
 
@@ -53,7 +56,9 @@ def decrypt_data(encrypted_data):
     Decrypt the profile data.
 
     :param encrypted_data: The encrypted data.
+    :type encrypted_data: bytes
     :return: The decrypted string data.
+    :rtype: str
     """
     return cipher.decrypt(encrypted_data).decode()
 
@@ -62,6 +67,8 @@ def load_profiles():
     Load profiles from the stored profiles file (decrypted).
 
     :return: A dictionary of profiles, where keys are profile names and values are their associated ROBLOSECURITY tokens.
+    :rtype: dict
+    :raises json.JSONDecodeError: If the profiles file contains invalid JSON data.
     """
     if os.path.exists(PROFILE_FILE):
         with open(PROFILE_FILE, 'rb') as f:
@@ -75,6 +82,7 @@ def save_profiles(profiles):
     Save the current profiles to the profiles file (encrypted).
 
     :param profiles: A dictionary of profiles to be saved.
+    :type profiles: dict
     """
     encrypted_data = encrypt_data(json.dumps(profiles))
     with open(PROFILE_FILE, 'wb') as f:
@@ -112,6 +120,7 @@ def initialize_driver():
     Initialize and return a new Chrome WebDriver instance.
 
     :return: A new WebDriver instance configured with default options.
+    :rtype: webdriver.Chrome
     """
     options = webdriver.ChromeOptions()
     return webdriver.Chrome(options=options)
@@ -124,6 +133,7 @@ def login_to_roblox(driver, roblosecurity_token, timeout=5):
     :param roblosecurity_token: The ROBLOSECURITY token to be set in the browser session for login.
     :param timeout: Maximum wait time (in seconds) to wait for the home page to load. Defaults to 5 seconds.
     :return: True if login is successful (i.e., the page contains "/home"), False otherwise.
+    :rtype: bool
     """
     driver.get('https://www.roblox.com/')
     set_roblosecurity_cookie(driver, roblosecurity_token)
@@ -138,10 +148,10 @@ def launch_profile(profiles, profile_name, listbox):
     """
     Launch a profile by using the associated ROBLOSECURITY token to log in.
 
-
     :param profiles: A dictionary of profiles where keys are profile names and values are ROBLOSECURITY tokens.
     :param profile_name: The name of the profile to be launched.
     :param listbox: The listbox widget in the GUI where profiles are displayed.
+    :raises KeyError: If the profile_name is not found in the profiles.
     """
     if profile_name in profiles:
         roblosecurity_token = profiles[profile_name]
