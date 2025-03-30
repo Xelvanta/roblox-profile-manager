@@ -67,9 +67,7 @@ To run the **Roblox Profile Manager** application:
 
 Here are some common issues you may encounter during setup:
 
-- **MultiBloxy not running**: Ensure that **MultiBloxy.exe** is running before attempting to manage multiple instances of Roblox. If it is not found, the script will prompt you to start it manually.
-
-- **Profile not found**: Ensure the profiles file (`profiles.json`) exists and is in the correct format. If it's missing, you may need to create new profiles using the GUI.
+- **Launching a new instance of Roblox closes the previous instance**: Ensure that **MultiBloxy.exe** is running before attempting to manage multiple instances of Roblox.
 
 - **Selenium WebDriver issues**: If you're having trouble with the browser automation, ensure that **Google Chrome** is installed and properly configured for Selenium to interact with.
 
