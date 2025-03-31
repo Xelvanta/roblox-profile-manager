@@ -16,7 +16,9 @@ MULTIBLOXY = os.path.join("MultiBloxy", "MultiBloxy.exe")  # MultiBloxy executab
 
 def generate_key():
     """
-    Generate and save a key for encryption. This should only be done once and the key is stored in the KEY_FILE.
+    Generates and save a key for encryption. This should only be done once and the key is stored in the KEY_FILE.
+
+    :raises OSError: If the app doesn't have permission to write the file, the directory is read-only, or there is insufficient space on the device.
     """
     key = Fernet.generate_key()
     with open(KEY_FILE, 'wb') as key_file:
@@ -24,7 +26,7 @@ def generate_key():
 
 def load_key():
     """
-    Load the encryption key from the KEY_FILE. Checks if the encryption key file exists. If it does, the key is loaded from the KEY_FILE and returned. If the file does not exist, a new encryption key is generated, saved to the file, and then returned.
+    Checks if the encryption key file exists. If it does, the key is loaded from the KEY_FILE and returned. If the file does not exist, a new encryption key is generated, saved to the file, and then returned.
 
     :return: The encryption key loaded from the KEY_FILE.
     :rtype: bytes
