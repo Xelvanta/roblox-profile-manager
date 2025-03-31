@@ -238,6 +238,11 @@ def create_gui():
     root = tk.Tk()
     root.title("Roblox Profile Manager")
 
+    try:
+        root.iconbitmap("assets/RobloxProfileManagerIcon.ico")
+    except tk.TclError:
+        pass
+
     # Create and place the listbox to display profile names
     listbox = tk.Listbox(root, width=50, height=15)
     listbox.grid(row=0, column=0, padx=10, pady=10)
