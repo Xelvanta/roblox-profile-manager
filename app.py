@@ -13,6 +13,17 @@ from cryptography.fernet import Fernet
 PROFILE_FILE = "profiles.json"  # Profile file for storing and retrieving profiles (encrypted)
 KEY_FILE = "key.key"  # Encryption key for encrypting and decrypting profile data
 MULTIBLOXY = os.path.join("MultiBloxy", "MultiBloxy.exe")  # MultiBloxy executable file for multi-instance support
+CONFIG_FILE = "config.json"
+
+def load_config():
+    if os.path.exists(CONFIG_FILE):
+        with open(CONFIG_FILE, "r") as f:
+            return json.load(f)
+    return {}
+
+def save_config(config):
+    with open(CONFIG_FILE, "w") as f:
+        json.dump(config, f, indent=4)
 
 def generate_key():
     """
@@ -116,6 +127,111 @@ def set_roblosecurity_cookie(driver, roblosecurity_token):
     """
     driver.add_cookie({'name': '.ROBLOSECURITY', 'value': roblosecurity_token, 'domain': 'roblox.com'})
     driver.refresh()
+
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+def add_profile_via_browser(profiles, listbox):
+    """
+    Launches a browser for the user to log in and captures the .ROBLOSECURITY cookie.
+
+    :param profiles: Dictionary of existing profiles.
+    :param listbox: The listbox widget in the GUI.
+    """
+    config = load_config()
+    skip_warning = config.get("skip_security_warning", False)
+
+    def proceed_with_browser():
+        profile_name = simpledialog.askstring("Profile Name", "Enter a name for this profile:")
+        if not profile_name or profile_name in profiles:
+            messagebox.showerror("Error", "Invalid or duplicate profile name.")
+            return
+
+        driver = None
+        try:
+            driver = initialize_driver()
+            driver.get("https://www.roblox.com/login")
+
+            # Wait until redirected to home after login
+            WebDriverWait(driver, 120).until(EC.url_contains("/home"))
+
+            cookies = driver.get_cookies()
+            roblosecurity = next((c['value'] for c in cookies if c['name'] == '.ROBLOSECURITY'), None)
+
+            if not roblosecurity:
+                messagebox.showerror("Error", "Failed to retrieve .ROBLOSECURITY token.")
+                return
+
+            profiles[profile_name] = roblosecurity
+            save_profiles(profiles)
+            update_profile_list(profiles, listbox)
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Something went wrong:\n{str(e)}")
+            return
+        finally:
+            if driver:
+                try:
+                    driver.quit()
+                except:
+                    pass
+
+        # Show success message after browser is closed
+        messagebox.showinfo("Success", f"Profile '{profile_name}' added successfully.")
+
+    if not skip_warning:
+        warning_window = tk.Toplevel()
+        warning_window.title("Security Warning")
+        warning_window.geometry("420x250")
+        warning_window.resizable(False, False)
+        warning_window.grab_set()
+
+        try:
+            warning_window.iconbitmap("assets/RobloxProfileManagerIcon.ico")
+        except tk.TclError:
+            pass
+
+        warning_label = tk.Label(
+            warning_window,
+            text=(
+                "⚠️ You are about to generate a persistent .ROBLOSECURITY token.\n\n"
+                "Anyone with access to this token can fully control your account.\n\n"
+                "To revoke all tokens, visit Roblox settings > Security > "
+                "'Sign out of all other sessions'."
+            ),
+            wraplength=380,
+            justify="left",
+            anchor="w"
+        )
+        warning_label.pack(padx=20, pady=(20, 10))
+
+        var_dont_show = tk.BooleanVar()
+        check = tk.Checkbutton(
+            warning_window,
+            text="Don't show this message again",
+            variable=var_dont_show
+        )
+        check.pack()
+
+        btn_frame = tk.Frame(warning_window)
+        btn_frame.pack(pady=20)
+
+        def on_yes():
+            if var_dont_show.get():
+                config["skip_security_warning"] = True
+                save_config(config)
+            warning_window.destroy()
+            proceed_with_browser()
+
+        def on_no():
+            warning_window.destroy()
+
+        tk.Button(btn_frame, text="Continue", width=12, command=on_yes).grid(row=0, column=0, padx=10)
+        tk.Button(btn_frame, text="Cancel", width=12, command=on_no).grid(row=0, column=1, padx=10)
+
+    else:
+        proceed_with_browser()
 
 def initialize_driver():
     """
@@ -260,15 +376,18 @@ def create_gui():
     listbox.bind("<Double-1>", on_select_profile)
 
     # Create buttons for profile management
-    btn_create = tk.Button(root, text="Create Profile", width=20, command=lambda: create_profile(profiles, listbox))
-    btn_create.grid(row=1, column=0, padx=10, pady=10)
+    btn_create = tk.Button(root, text="Create Profile via .ROBLOSECURITY", width=30, command=lambda: create_profile(profiles, listbox))
+    btn_create.grid(row=1, column=0, padx=10, pady=5)
 
-    btn_delete = tk.Button(root, text="Delete Profile", width=20, command=lambda: delete_profile(profiles, listbox))
-    btn_delete.grid(row=2, column=0, padx=10, pady=10)
+    btn_add_browser = tk.Button(root, text="Create Profile via Browser Login", width=30, command=lambda: add_profile_via_browser(profiles, listbox))
+    btn_add_browser.grid(row=2, column=0, padx=10, pady=5)
+
+    btn_delete = tk.Button(root, text="Delete Profile", width=30, command=lambda: delete_profile(profiles, listbox))
+    btn_delete.grid(row=3, column=0, padx=10, pady=5)
 
     # Create a button to launch MultiBloxy
-    btn_launch_multibloxy = tk.Button(root, text="Launch MultiBloxy", width=20, command=launch_multibloxy)
-    btn_launch_multibloxy.grid(row=3, column=0, padx=10, pady=10)
+    btn_launch_multibloxy = tk.Button(root, text="Launch MultiBloxy", width=30, command=launch_multibloxy)
+    btn_launch_multibloxy.grid(row=4, column=0, padx=10, pady=5)
 
     # Start the GUI event loop
     root.mainloop()
