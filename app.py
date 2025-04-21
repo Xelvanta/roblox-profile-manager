@@ -181,8 +181,9 @@ def launch_profile(profiles, profile_name, listbox):
             print(f"Successfully logged in using profile '{profile_name}'!")
         else:
             print("Login failed.")
-         # Uncomment or modify the driver.quit() as needed to keep the browser open after login
+            # Uncomment or modify the driver.quit() as needed to keep the browser open after login
             driver.quit()  # Comment out to keep the browser open
+            messagebox.showerror("Login Failed", f"Failed to login using profile '{profile_name}'.")
     else:
         messagebox.showerror("Error", "Profile not found.")
 
