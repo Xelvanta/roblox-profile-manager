@@ -251,9 +251,9 @@ def add_profile_via_browser(profiles, listbox):
             warning_window,
             text=(
                 "⚠️ You are about to generate a persistent .ROBLOSECURITY token.\n\n"
-                "Anyone with access to this token can fully control your account.\n\n"
-                "To revoke all tokens, visit Roblox settings > Security > "
-                "'Sign out of all other sessions'."
+                "Proceed only if you understand the risks and intend to persist the token.\n\n"
+                "To revoke all tokens, visit Roblox Settings > Security > "
+                "'Log Out of All Other Sessions'."
             ),
             wraplength=380,
             justify="left",
@@ -282,8 +282,8 @@ def add_profile_via_browser(profiles, listbox):
         def on_no():
             warning_window.destroy()
 
-        tk.Button(btn_frame, text="Continue", width=12, command=on_yes).grid(row=0, column=0, padx=10)
-        tk.Button(btn_frame, text="Cancel", width=12, command=on_no).grid(row=0, column=1, padx=10)
+        tk.Button(btn_frame, text="Cancel", width=12, command=on_no).grid(row=0, column=0, padx=10)
+        tk.Button(btn_frame, text="Continue", width=12, command=on_yes).grid(row=0, column=1, padx=10)
 
     else:
         proceed_with_browser()
