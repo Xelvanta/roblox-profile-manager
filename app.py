@@ -2,8 +2,8 @@ import os
 import time
 import json
 import tkinter as tk
-from tkinter import messagebox
-from tkinter import simpledialog
+from tkinter import messagebox, simpledialog
+from PIL import Image, ImageTk
 import psutil
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
@@ -322,16 +322,30 @@ def delete_profile(profiles, listbox):
     :param profiles: A dictionary of existing profiles.
     :param listbox: The listbox widget in the GUI where profiles are displayed.
     """
-    profile_name = simpledialog.askstring("Profile Name", "Enter the profile name to delete:")
-    if profile_name in profiles:
-        del profiles[profile_name]
-        save_profiles(profiles)
+    # Get the selected profile from the listbox
+    selected_profile = listbox.get(tk.ACTIVE)
 
-        # Update the listbox immediately after deleting the profile
-        update_profile_list(profiles, listbox)
-        messagebox.showinfo("Success", f"Profile '{profile_name}' deleted successfully.")
-    else:
-        messagebox.showerror("Error", "Profile not found.")
+    # Ensure a profile is selected
+    if not selected_profile:
+        messagebox.showerror("Error", "Please select a profile to delete.")
+        return
+    
+    # Confirm the deletion with a professional message
+    confirm = messagebox.askyesno(
+        "Confirm Deletion",
+        f"Are you sure you want to delete the profile '{selected_profile}'? This action cannot be undone."
+    )
+    
+    if confirm:
+        if selected_profile in profiles:
+            del profiles[selected_profile]
+            save_profiles(profiles)
+
+            # Update the listbox immediately after deleting the profile
+            update_profile_list(profiles, listbox)
+            messagebox.showinfo("Success", f"Profile '{selected_profile}' deleted successfully.")
+        else:
+            messagebox.showerror("Error", "Profile not found.")
 
 def update_profile_list(profiles, listbox):
     """
@@ -375,18 +389,31 @@ def create_gui():
 
     listbox.bind("<Double-1>", on_select_profile)
 
-    # Create buttons for profile management
-    btn_create = tk.Button(root, text="Create Profile via .ROBLOSECURITY", width=30, command=lambda: create_profile(profiles, listbox))
-    btn_create.grid(row=1, column=0, padx=10, pady=5)
+    # Load the icon images
+    icon_add = Image.open("assets/user-plus.ico")
+    icon_add = icon_add.resize((20, 20), Image.Resampling.LANCZOS)
+    icon_add = ImageTk.PhotoImage(icon_add)
 
-    btn_add_browser = tk.Button(root, text="Create Profile via Browser Login", width=30, command=lambda: add_profile_via_browser(profiles, listbox))
-    btn_add_browser.grid(row=2, column=0, padx=10, pady=5)
+    icon_delete = Image.open("assets/trash-2.ico")
+    icon_delete = icon_delete.resize((20, 20), Image.Resampling.LANCZOS)
+    icon_delete = ImageTk.PhotoImage(icon_delete)
 
-    btn_delete = tk.Button(root, text="Delete Profile", width=30, command=lambda: delete_profile(profiles, listbox))
+    icon_multibloxy = Image.open("assets/MultiBloxy.ico")
+    icon_multibloxy = icon_multibloxy.resize((20, 20), Image.Resampling.LANCZOS)
+    icon_multibloxy = ImageTk.PhotoImage(icon_multibloxy)
+
+    # Create buttons with icons
+    btn_add_browser = tk.Button(root, text="  Add Profile via Browser Login", width=270, compound="left", image=icon_add, command=lambda: add_profile_via_browser(profiles, listbox))
+    btn_add_browser.grid(row=1, column=0, padx=10, pady=5)
+
+    btn_create = tk.Button(root, text="  Add Profile via .ROBLOSECURITY", width=270, compound="left", image=icon_add, command=lambda: create_profile(profiles, listbox))
+    btn_create.grid(row=2, column=0, padx=10, pady=5)
+
+    btn_delete = tk.Button(root, text="  Delete Profile", width=270, compound="left", image=icon_delete, command=lambda: delete_profile(profiles, listbox))
     btn_delete.grid(row=3, column=0, padx=10, pady=5)
 
     # Create a button to launch MultiBloxy
-    btn_launch_multibloxy = tk.Button(root, text="Launch MultiBloxy", width=30, command=launch_multibloxy)
+    btn_launch_multibloxy = tk.Button(root, text="  Launch MultiBloxy", width=270, compound="left", image=icon_multibloxy, command=launch_multibloxy)
     btn_launch_multibloxy.grid(row=4, column=0, padx=10, pady=5)
 
     # Start the GUI event loop
