@@ -66,6 +66,41 @@ To run the **Roblox Profile Manager** application:
 
 ---
 
+## 📸 Preview
+
+<table>
+  <tr>
+    <td align="center">
+      <img src="assets/gui_main.png" width="200"/><br>Main Screen
+    </td>
+    <td align="center">
+      <img src="assets/gui_profile_name.png" width="200"/><br>Profile Name
+    </td>
+    <td align="center">
+      <img src="assets/gui_roblosecurity_token.png" width="200"/><br>.ROBLOSECURITY Token
+    </td>
+    <td align="center">
+      <img src="assets/gui_launcher.png" width="200"/><br>Launcher
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="assets/gui_security_warning.png" width="200"/><br>Security Warning
+    </td>
+    <td align="center">
+      <img src="assets/gui_error_profile_name.png" width="200"/><br>Profile Name Error
+    </td>
+    <td align="center">
+      <img src="assets/gui_error_roblosecurity_token.png" width="200"/><br>.ROBLOSECURITY Token Error
+    </td>
+    <td align="center">
+      <img src="assets/gui_error_launcher.png" width="200"/><br>Launcher Error
+    </td>
+  </tr>
+</table>
+
+---
+
 ## ⚠️ Common Issues
 
 Here are some common issues you may encounter during setup:
