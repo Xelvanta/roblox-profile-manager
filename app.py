@@ -132,6 +132,60 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
+def initialize_driver():
+    """
+    Initialize and return a new Chrome WebDriver instance.
+
+    :return: A new WebDriver instance configured with default options.
+    :rtype: webdriver.Chrome
+    """
+    options = webdriver.ChromeOptions()
+    return webdriver.Chrome(options=options)
+
+def login_to_roblox(driver, roblosecurity_token, timeout=5):
+    """
+    Log into Roblox by setting the .ROBLOSECURITY token cookie and waiting for the home page to load.
+
+    :param driver: The WebDriver instance used to interact with the browser.
+    :param roblosecurity_token: The ROBLOSECURITY token to be set in the browser session for login.
+    :param timeout: Maximum wait time (in seconds) to wait for the home page to load. Defaults to 5 seconds.
+    :return: True if login is successful (i.e., the page contains "/home"), False otherwise.
+    :rtype: bool
+    """
+    driver.get('https://www.roblox.com/')
+    set_roblosecurity_cookie(driver, roblosecurity_token)
+
+    try:
+        WebDriverWait(driver, timeout).until(EC.url_contains("/home"))
+        return True
+    except:
+        return False
+
+def launch_profile(profiles, profile_name, listbox):
+    """
+    Launch a profile by using the associated ROBLOSECURITY token to log in.
+
+    :param profiles: A dictionary of profiles where keys are profile names and values are ROBLOSECURITY tokens.
+    :param profile_name: The name of the profile to be launched.
+    :param listbox: The listbox widget in the GUI where profiles are displayed.
+    :raises KeyError: If the profile_name is not found in the profiles.
+    """
+    if profile_name in profiles:
+        roblosecurity_token = profiles[profile_name]
+        
+        # Initialize the WebDriver
+        driver = initialize_driver()
+
+        # Attempt to log in using the provided ROBLOSECURITY token
+        if login_to_roblox(driver, roblosecurity_token):
+            print(f"Successfully logged in using profile '{profile_name}'!")
+        else:
+            print("Login failed.")
+         # Uncomment or modify the driver.quit() as needed to keep the browser open after login
+         # driver.quit()  # Commented out to keep the browser open
+    else:
+        messagebox.showerror("Error", "Profile not found.")
+
 def add_profile_via_browser(profiles, listbox):
     """
     Launches a browser for the user to log in and captures the .ROBLOSECURITY cookie.
@@ -233,60 +287,6 @@ def add_profile_via_browser(profiles, listbox):
     else:
         proceed_with_browser()
 
-def initialize_driver():
-    """
-    Initialize and return a new Chrome WebDriver instance.
-
-    :return: A new WebDriver instance configured with default options.
-    :rtype: webdriver.Chrome
-    """
-    options = webdriver.ChromeOptions()
-    return webdriver.Chrome(options=options)
-
-def login_to_roblox(driver, roblosecurity_token, timeout=5):
-    """
-    Log into Roblox by setting the .ROBLOSECURITY token cookie and waiting for the home page to load.
-
-    :param driver: The WebDriver instance used to interact with the browser.
-    :param roblosecurity_token: The ROBLOSECURITY token to be set in the browser session for login.
-    :param timeout: Maximum wait time (in seconds) to wait for the home page to load. Defaults to 5 seconds.
-    :return: True if login is successful (i.e., the page contains "/home"), False otherwise.
-    :rtype: bool
-    """
-    driver.get('https://www.roblox.com/')
-    set_roblosecurity_cookie(driver, roblosecurity_token)
-
-    try:
-        WebDriverWait(driver, timeout).until(EC.url_contains("/home"))
-        return True
-    except:
-        return False
-
-def launch_profile(profiles, profile_name, listbox):
-    """
-    Launch a profile by using the associated ROBLOSECURITY token to log in.
-
-    :param profiles: A dictionary of profiles where keys are profile names and values are ROBLOSECURITY tokens.
-    :param profile_name: The name of the profile to be launched.
-    :param listbox: The listbox widget in the GUI where profiles are displayed.
-    :raises KeyError: If the profile_name is not found in the profiles.
-    """
-    if profile_name in profiles:
-        roblosecurity_token = profiles[profile_name]
-        
-        # Initialize the WebDriver
-        driver = initialize_driver()
-
-        # Attempt to log in using the provided ROBLOSECURITY token
-        if login_to_roblox(driver, roblosecurity_token):
-            print(f"Successfully logged in using profile '{profile_name}'!")
-        else:
-            print("Login failed.")
-         # Uncomment or modify the driver.quit() as needed to keep the browser open after login
-         # driver.quit()  # Commented out to keep the browser open
-    else:
-        messagebox.showerror("Error", "Profile not found.")
-
 def create_profile(profiles, listbox):
     """
     Create a new profile and add it to the profile list.
@@ -294,26 +294,83 @@ def create_profile(profiles, listbox):
     :param profiles: A dictionary of existing profiles.
     :param listbox: The listbox widget in the GUI where profiles are displayed.
     """
-    profile_name = simpledialog.askstring("Profile Name", "Enter the profile name:")
-    if not profile_name:
-        return
-    
-    # Check if the profile name already exists in the profiles
-    if profile_name in profiles:
-        messagebox.showerror("Error", f"Profile '{profile_name}' already exists.")
-        return
-    
-    roblosecurity_token = simpledialog.askstring("Token", "Enter the ROBLOSECURITY token:")
-    if not roblosecurity_token:
-        return
-    
-    # Add the new profile to the profiles dictionary
-    profiles[profile_name] = roblosecurity_token
-    save_profiles(profiles)
+    # Create a new Toplevel window for profile name input
+    name_window = tk.Toplevel()
+    name_window.title("Profile Name")
 
-    # Update the listbox immediately after adding the new profile
-    update_profile_list(profiles, listbox)
-    messagebox.showinfo("Success", f"Profile '{profile_name}' created successfully.")
+    # Set the icon for the window
+    try:
+        name_window.iconbitmap("assets/RobloxProfileManagerIcon.ico")
+    except tk.TclError:
+        pass  # Ignore if the icon is not found or cannot be set
+
+    # Create a label with an icon (for example, a user icon)
+    name_icon = Image.open("assets/RobloxProfileManagerIcon.ico")
+    name_icon = name_icon.resize((20, 20), Image.Resampling.LANCZOS)
+    name_icon = ImageTk.PhotoImage(name_icon)
+
+    name_label = tk.Label(name_window, text="Enter the profile name:")
+    name_label.image = name_icon  # Keep reference to avoid garbage collection
+    name_label.pack(padx=20, pady=10)
+
+    # Create an entry widget to input the profile name
+    name_entry = tk.Entry(name_window, width=30)
+    name_entry.pack(padx=20, pady=10)
+
+    def on_submit():
+        profile_name = name_entry.get()
+        if not profile_name or profile_name in profiles:
+            # Close the profile name window if name is invalid
+            name_window.destroy()
+
+            # Show an error message
+            messagebox.showerror("Error", "Invalid or duplicate profile name.")
+            return
+        
+        # Proceed with the token input if the profile name is valid
+        name_window.destroy()  # Close the name input window
+
+        # Open the token input window
+        token_window = tk.Toplevel()
+        token_window.title(".ROBLOSECURITY Token")
+        
+        # Set the icon for the token window
+        try:
+            token_window.iconbitmap("assets/RobloxProfileManagerIcon.ico")
+        except tk.TclError:
+            pass  # Ignore if the icon is not found or cannot be set
+        
+        token_label = tk.Label(token_window, text="Enter the .ROBLOSECURITY token:")
+        token_label.pack(padx=20, pady=10)
+        
+        token_entry = tk.Entry(token_window, show="●", width=30)  # This will mask the token input
+        token_entry.pack(padx=20, pady=10)
+
+        def on_token_submit():
+            roblosecurity_token = token_entry.get()
+            if not roblosecurity_token:  # If token is blank, show error and close token window
+                messagebox.showerror("Error", "Token cannot be empty.")
+                token_window.destroy()  # Close the token window
+                return
+            
+            # Add the new profile to the profiles dictionary
+            profiles[profile_name] = roblosecurity_token
+            save_profiles(profiles)
+
+            # Update the listbox immediately after adding the new profile
+            update_profile_list(profiles, listbox)
+            messagebox.showinfo("Success", f"Profile '{profile_name}' created successfully.")
+            token_window.destroy()
+
+        submit_button = tk.Button(token_window, text="Submit", command=on_token_submit)
+        submit_button.pack(pady=10)
+
+        token_window.mainloop()
+
+    submit_button = tk.Button(name_window, text="Submit", command=on_submit)
+    submit_button.pack(pady=10)
+
+    name_window.mainloop()
 
 def delete_profile(profiles, listbox):
     """
