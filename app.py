@@ -8,6 +8,7 @@ import psutil
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
 from cryptography.fernet import Fernet
 
 PROFILE_FILE = "profiles.json"  # Profile file for storing and retrieving profiles (encrypted)
@@ -127,10 +128,6 @@ def set_roblosecurity_cookie(driver, roblosecurity_token):
     """
     driver.add_cookie({'name': '.ROBLOSECURITY', 'value': roblosecurity_token, 'domain': 'roblox.com'})
     driver.refresh()
-
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 
 def initialize_driver():
     """
